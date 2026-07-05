@@ -45,6 +45,7 @@
     "prepublishOnly": "bun run typecheck && bun test && bun run build"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.31.0",
     "@types/bun": "^1.2.0",
     "typescript": "^5.8.0"
   },
