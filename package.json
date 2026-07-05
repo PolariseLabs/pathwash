@@ -1,0 +1,54 @@
+{
+  "name": "@polarise/pathwash",
+  "version": "1.0.0",
+  "description": "Clean dirty archive and upload paths: Windows backslash zip entries, macOS junk files, directory markers, path traversal, and URL-unsafe filenames.",
+  "keywords": [
+    "zip",
+    "archive",
+    "upload",
+    "sanitise",
+    "normalise",
+    "path",
+    "filename",
+    "zip-slip",
+    "storyline",
+    "scorm",
+    "sanitize",
+    "normalize"
+  ],
+  "license": "MIT",
+  "author": "Charlie Fox <charlie@polarise.io>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PolariseLabs/pathwash.git"
+  },
+  "bugs": "https://github.com/PolariseLabs/pathwash/issues",
+  "homepage": "https://github.com/PolariseLabs/pathwash#readme",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run typecheck && bun test && bun run build"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.0",
+    "typescript": "^5.8.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
