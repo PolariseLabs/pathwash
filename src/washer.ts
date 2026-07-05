@@ -51,7 +51,7 @@ export interface Washer {
  * re-passing (and eventually diverging on) options.
  *
  * ```ts
- * // conventions.ts — the single place policy lives
+ * // conventions.ts: the single place policy lives
  * export const assetPaths = createWasher({ externalUrls: "reject" })
  * export const configRefs = createWasher({ externalUrls: "allow", stripQueryAndHash: true })
  *
