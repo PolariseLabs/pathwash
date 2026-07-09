@@ -45,6 +45,13 @@ export {
 } from "./limits.js"
 export { getExtension, splitExtension } from "./extension.js"
 export {
+  basename,
+  dirname,
+  joinPath,
+  resolveWithin,
+  stem,
+} from "./segments.js"
+export {
   findPathHazards,
   hasTrailingDotOrSpace,
   isWindowsReservedName,
