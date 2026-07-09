@@ -1,5 +1,5 @@
 import type { SanitiseOptions } from "./types.js"
-import { normalisePath } from "./normalise.js"
+import { hasTraversal, normalisePath } from "./normalise.js"
 import { sanitiseFilename, sanitisePath } from "./sanitise.js"
 
 /**
@@ -36,8 +36,21 @@ export function isCleanPath(path: string, options: SanitiseOptions = {}): boolea
   return path !== "" && sanitisePath(path, options) === path
 }
 
-/** Throw unless the path is already canonical. For downstream boundaries that must never normalise. */
+/**
+ * Throw unless the path is already canonical AND free of traversal. For
+ * downstream boundaries that must never normalise.
+ *
+ * Traversal is checked separately because `sanitisePath` deliberately preserves
+ * `..` rather than deleting it, so a hostile path is canonical-but-unsafe. This
+ * is the boundary that refuses it.
+ */
 export function assertCleanPath(path: string, options: SanitiseOptions = {}): void {
+  if (hasTraversal(path)) {
+    throw new Error(
+      `Path contains a traversal segment: ${JSON.stringify(path)}. ` +
+        "Reject it; do not normalise it away.",
+    )
+  }
   if (!isCleanPath(path, options)) {
     throw new Error(
       `Path is not in canonical form: ${JSON.stringify(path)} (expected ${JSON.stringify(sanitisePath(path, options))}). ` +

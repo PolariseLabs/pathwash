@@ -114,4 +114,12 @@ export interface SanitiseOptions {
   replacement?: string
   /** Cap the result length, truncating the base name while keeping the extension. */
   maxLength?: number
+  /**
+   * Returned when the name reduces to an empty string. Default "".
+   *
+   * A name of only disallowed characters (`"???"`, `"..."`) sanitises to
+   * nothing. Writing that file produces an empty path segment or overwrites the
+   * directory entry, so callers that must always yield a name set this.
+   */
+  fallback?: string
 }

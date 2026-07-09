@@ -6,9 +6,63 @@
  * it consistently instead of each call site re-deriving prefix checks.
  */
 
-/** `http://`, `https://`, or protocol-relative `//`. */
-export function isRemoteUrl(value: string): boolean {
-  return /^https?:\/\//i.test(value) || value.startsWith("//")
+export interface UrlOptions {
+  /**
+   * Extra hosts to treat as remote even when the value carries no scheme.
+   * Backends hand out bare host references (`abc-123.convex.cloud/img/a.png`)
+   * that look exactly like a relative path. Normalising one lowercases and
+   * hyphenates the host, and the reference is lost.
+   *
+   * A host matches itself and any subdomain: `"convex.cloud"` covers
+   * `abc-123.convex.cloud`. Leading dots are accepted (`".convex.cloud"`).
+   */
+  hosts?: readonly string[]
+}
+
+/** Query keys that mean the URL carries a credential and will expire. */
+const SIGNED_QUERY = /[?&](x-amz-[a-z-]+|token|signature|expires)=/i
+
+const hostOf = (value: string): string =>
+  value.split(/[/?#]/, 1)[0]!.toLowerCase()
+
+const matchesHost = (value: string, hosts: readonly string[] = []): boolean => {
+  if (hosts.length === 0) return false
+  const host = hostOf(value)
+  if (host === "") return false
+  return hosts.some((entry) => {
+    const h = entry.replace(/^\./, "").toLowerCase()
+    return h !== "" && (host === h || host.endsWith(`.${h}`))
+  })
+}
+
+/**
+ * `http://`, `https://`, protocol-relative `//`, or a bare host listed in
+ * `options.hosts`.
+ */
+export function isRemoteUrl(value: string, options: UrlOptions = {}): boolean {
+  if (/^https?:\/\//i.test(value) || value.startsWith("//")) return true
+  return matchesHost(value, options.hosts)
+}
+
+/**
+ * True when the URL carries a short-lived credential in its query (`X-Amz-*`,
+ * `token`, `signature`, `expires`).
+ *
+ * Persisting one of these into a config produces a reference that works in the
+ * session that created it and 403s for everyone after it expires. Detect and
+ * refuse them at the save boundary.
+ */
+export function isSignedUrl(value: string): boolean {
+  return SIGNED_QUERY.test(value)
+}
+
+/**
+ * True when the value must not be persisted as an asset reference: it is
+ * either scoped to the current document (`blob:`) or carries an expiring
+ * credential. `data:` URLs are inline content and are safe to persist.
+ */
+export function isTransientUrl(value: string): boolean {
+  return isBlobUrl(value) || isSignedUrl(value)
 }
 
 /** A `data:` URL (inline content, safe to persist but not a path). */
@@ -23,10 +77,11 @@ export function isBlobUrl(value: string): boolean {
 
 /**
  * Anything that is not a plain relative path: remote, protocol-relative,
- * `data:`, or `blob:`. When this is true, path normalisation does not apply.
+ * `data:`, `blob:`, or a bare host from `options.hosts`. When this is true,
+ * path normalisation does not apply.
  */
-export function isExternalUrl(value: string): boolean {
-  return isRemoteUrl(value) || isDataUrl(value) || isBlobUrl(value)
+export function isExternalUrl(value: string, options: UrlOptions = {}): boolean {
+  return isRemoteUrl(value, options) || isDataUrl(value) || isBlobUrl(value)
 }
 
 /** Remove the query string and fragment from a path or URL, keeping the rest. */
