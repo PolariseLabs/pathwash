@@ -1,6 +1,6 @@
 {
   "name": "@polarise/pathwash",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Clean dirty archive and upload paths: Windows backslash zip entries, macOS junk files, directory markers, path traversal, and URL-unsafe filenames.",
   "keywords": [
     "zip",
