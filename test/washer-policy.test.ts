@@ -18,8 +18,8 @@ const assetPaths = createWasher({
 
 describe("a washer is the whole policy", () => {
   test("key is bare and emit is absolute, from the same washer", () => {
-    expect(assetPaths.key("/avatars/UK.png")).toBe("avatars/uk.png")
-    expect(assetPaths.emit("avatars/UK.png")).toBe("/avatars/uk.png")
+    expect<string>(assetPaths.key("/avatars/UK.png")).toBe("avatars/uk.png")
+    expect<string>(assetPaths.emit("avatars/UK.png")).toBe("/avatars/uk.png")
   })
 
   // The bug this library exists to prevent: a table keyed on one spelling
@@ -33,19 +33,19 @@ describe("a washer is the whole policy", () => {
 
   test("emit is stable regardless of how the value was written", () => {
     for (const v of ["avatars/uk.png", "/avatars/uk.png", "./avatars/uk.png"]) {
-      expect(assetPaths.emit(v)).toBe("/avatars/uk.png")
+      expect<string>(assetPaths.emit(v)).toBe("/avatars/uk.png")
     }
   })
 
   test("key and emit are both idempotent, and agree with each other", () => {
     const emitted = assetPaths.emit("avatars/UK.png")
-    expect(assetPaths.emit(emitted)).toBe(emitted)
-    expect(assetPaths.key(emitted)).toBe(assetPaths.key("avatars/UK.png"))
+    expect<string>(assetPaths.emit(emitted)).toBe(emitted)
+    expect<string>(assetPaths.key(emitted)).toBe(assetPaths.key("avatars/UK.png"))
   })
 
   test("deploy roots are stripped by the washer, not by each caller", () => {
-    expect(assetPaths.key("frontend/public/img/a.png")).toBe("img/a.png")
-    expect(assetPaths.emit("public/img/a.png")).toBe("/img/a.png")
+    expect<string>(assetPaths.key("frontend/public/img/a.png")).toBe("img/a.png")
+    expect<string>(assetPaths.emit("public/img/a.png")).toBe("/img/a.png")
   })
 })
 
@@ -53,8 +53,8 @@ describe("passthrough: the library never learns your domain", () => {
   test("a colour is not a path, and no method touches it", () => {
     for (const colour of ["#ff0000", "#FFF", "#11223344"]) {
       expect(assetPaths.clean(colour)).toBe(colour)
-      expect(assetPaths.key(colour)).toBe(colour)
-      expect(assetPaths.emit(colour)).toBe(colour)
+      expect<string>(assetPaths.key(colour)).toBe(colour)
+      expect<string>(assetPaths.emit(colour)).toBe(colour)
       expect(assetPaths.toUrl(colour)).toBe(colour)
       expect(assetPaths.isClean(colour)).toBe(true)
       expect(assetPaths.isPassthrough(colour)).toBe(true)
@@ -66,13 +66,13 @@ describe("passthrough: the library never learns your domain", () => {
   // "/#ff0000" — a broken image, which is exactly how this bug shows up.
   test("without passthrough the same value would be mangled", () => {
     const naive = createWasher({ externalUrls: "allow", form: "absolute" })
-    expect(naive.emit("#ff0000")).not.toBe("#ff0000")
+    expect<string>(naive.emit("#ff0000")).not.toBe("#ff0000")
   })
 
   test("a scheme-less configured host survives untouched", () => {
     const ref = "abc-123.storage.example.com/img/A.png"
     expect(assetPaths.clean(ref)).toBe(ref)
-    expect(assetPaths.emit(ref)).toBe(ref)
+    expect<string>(assetPaths.emit(ref)).toBe(ref)
     expect(assetPaths.isPassthrough(ref)).toBe(true)
   })
 
@@ -85,7 +85,7 @@ describe("passthrough: the library never learns your domain", () => {
 
   test("ordinary external urls and inline values still pass through", () => {
     for (const v of ["https://cdn.example.com/a.png", "data:image/png;base64,AA", "blob:https://x/y"]) {
-      expect(assetPaths.emit(v)).toBe(v)
+      expect<string>(assetPaths.emit(v)).toBe(v)
     }
   })
 

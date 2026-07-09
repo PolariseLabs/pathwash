@@ -6,6 +6,7 @@ import { encodePathForUrl, isExternalUrl, stripQueryAndHash } from "./urls.js"
 import { formatPath, stripPathPrefixes, toBare, type PathForm } from "./forms.js"
 import { folderSlug, type FolderSlugOptions } from "./slug.js"
 import { caseCollisions, resolveWithin } from "./segments.js"
+import type { EmittedRef, PathKey } from "./brand.js"
 
 export interface WasherConfig {
   /**
@@ -83,14 +84,14 @@ export interface Washer {
    * misses the others and the miss is silent. Use on BOTH sides of a lookup;
    * never to name a file.
    */
-  key(value: string): string
+  key(value: string): PathKey
   /**
    * The value to write out: cleaned, then rendered in the configured `form`.
    *
    * Emitting `absolute` is what lets a consumer resolve a reference from any
    * route depth without carrying its own normaliser.
    */
-  emit(value: string): string
+  emit(value: string): EmittedRef
   /** Canonicalise, then percent-encode for use in a URL. Passthrough values and external URLs (when allowed) pass through. */
   toUrl(value: string): string
   /** Name a directory from an authored title, per this washer's `folder` policy. */
@@ -208,12 +209,12 @@ export function createWasher(config: WasherConfig = {}): Washer {
       return sanitiseOptions ? sanitiseFilename(name, sanitiseOptions) : normalisePath(name)
     },
     key(value) {
-      if (isPassthrough(value)) return value
-      return toBare(clean(value))
+      const out = isPassthrough(value) ? value : toBare(clean(value))
+      return out as PathKey
     },
     emit(value) {
-      if (isPassthrough(value)) return value
-      return formatPath(clean(value), form)
+      const out = isPassthrough(value) ? value : formatPath(clean(value), form)
+      return out as EmittedRef
     },
     toUrl(value) {
       if (isOptedOut(value)) return value
