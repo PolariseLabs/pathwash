@@ -1,6 +1,15 @@
 export { analyseEntries } from "./analyse.js"
 export { createWasher, type Washer, type WasherConfig } from "./washer.js"
 export { normalisePath, hasTraversal, isDirectoryMarker } from "./normalise.js"
+export {
+  formatPath,
+  isPathForm,
+  stripPathPrefixes,
+  toAbsolute,
+  toBare,
+  toDotRelative,
+  type PathForm,
+} from "./forms.js"
 export { isJunkPath } from "./junk.js"
 export { sanitiseFilename, sanitisePath } from "./sanitise.js"
 export {
@@ -9,14 +18,22 @@ export {
   isCleanPath,
   isNormalisedPath,
 } from "./clean.js"
-export { slugify, folderSlug, type SlugOptions } from "./slug.js"
+export {
+  slugify,
+  folderSlug,
+  type SlugOptions,
+  type FolderSlugOptions,
+} from "./slug.js"
 export {
   encodePathForUrl,
   isBlobUrl,
   isDataUrl,
   isExternalUrl,
   isRemoteUrl,
+  isSignedUrl,
+  isTransientUrl,
   stripQueryAndHash,
+  type UrlOptions,
 } from "./urls.js"
 export { dedupeName } from "./dedupe.js"
 export {

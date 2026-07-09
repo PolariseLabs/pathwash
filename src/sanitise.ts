@@ -19,7 +19,7 @@ import { isWindowsReservedName } from "./hazards.js"
  * `sanitiseFilename("Hero Image (Final).PNG")` → `"hero-image-final.png"`
  */
 export function sanitiseFilename(name: string, options: SanitiseOptions = {}): string {
-  const { lowercase = true, replacement = "-" } = options
+  const { lowercase = true, replacement = "-", fallback = "" } = options
   let s = name.trim()
   if (lowercase) s = s.toLowerCase()
   const allowed = lowercase ? /[^a-z0-9._-]+/g : /[^a-zA-Z0-9._-]+/g
@@ -49,7 +49,9 @@ export function sanitiseFilename(name: string, options: SanitiseOptions = {}): s
     const keep = Math.max(1, options.maxLength - ext.length)
     s = base.slice(0, keep).replace(/[-_.]+$/, "") + ext
   }
-  return s
+  // The fallback must itself be clean, or `isCleanFilename` stops being a fixed
+  // point of this function.
+  return s === "" ? fallback : s
 }
 
 /** Apply `sanitiseFilename` to every segment of a path, preserving structure. */
