@@ -16,6 +16,18 @@ export interface FolderSlugOptions extends SlugOptions {
    * case-sensitive object store.
    */
   lowercase?: boolean
+  /**
+   * What to do with a `.` inside the name. Default "keep".
+   *
+   * A directory is not a file, and a dot in one buys nothing: no host needs it,
+   * and some tooling treats a dotted path segment as a file, an extension, or
+   * (leading) a hidden entry. "collapse" turns each run into one `-`, so a
+   * directory name can never be mistaken for a filename.
+   *
+   * A leading dot is always trimmed regardless, under either setting: a
+   * `.hidden/` directory is not served by most static hosts.
+   */
+  dots?: "keep" | "collapse"
 }
 
 /**
@@ -43,15 +55,21 @@ export function slugify(name: string, options: SlugOptions = {}): string {
  * carries meaning.
  *
  * `folderSlug("Level 2: The Bridge!")` → `"Level-2-The-Bridge"`
+ * `folderSlug("v1.2 Intro", { dots: "collapse" })` → `"v1-2-Intro"`
+ *
+ * Note `_` is preserved. A deployed directory named from an authored title has
+ * to match whatever else references it — a config `src`, an iframe URL — and
+ * those keep their underscores. Silently rewriting `my_level/` to `my-level/`
+ * is how a level 404s at runtime with no warning.
  */
 export function folderSlug(name: string, options: FolderSlugOptions = {}): string {
-  const { maxLength, fallback = "", lowercase = false } = options
+  const { maxLength, fallback = "", lowercase = false, dots = "keep" } = options
   let s = name
     .normalize("NFC")
     .replace(/[^a-zA-Z0-9\-_. ]+/g, "")
     .replace(/\s+/g, "-")
-    .replace(/-{2,}/g, "-")
-    .replace(/^[-_.]+|[-_.]+$/g, "")
+  if (dots === "collapse") s = s.replace(/\.+/g, "-")
+  s = s.replace(/-{2,}/g, "-").replace(/^[-_.]+|[-_.]+$/g, "")
   if (lowercase) s = s.toLowerCase()
   if (maxLength !== undefined) s = s.slice(0, maxLength).replace(/[-_.]+$/, "")
   return s === "" ? fallback : s
