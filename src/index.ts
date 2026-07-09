@@ -1,5 +1,12 @@
 export { analyseEntries } from "./analyse.js"
 export { createWasher, type Washer, type WasherConfig } from "./washer.js"
+export {
+  asEmittedRef,
+  asPathKey,
+  type Brand,
+  type EmittedRef,
+  type PathKey,
+} from "./brand.js"
 export { normalisePath, hasTraversal, isDirectoryMarker } from "./normalise.js"
 export {
   formatPath,
@@ -44,6 +51,15 @@ export {
   type LimitViolationCode,
 } from "./limits.js"
 export { getExtension, splitExtension } from "./extension.js"
+export {
+  basename,
+  caseCollisions,
+  dirname,
+  joinPath,
+  resolveWithin,
+  segments,
+  stem,
+} from "./segments.js"
 export {
   findPathHazards,
   hasTrailingDotOrSpace,
