@@ -54,11 +54,19 @@ export function sanitiseFilename(name: string, options: SanitiseOptions = {}): s
   return s === "" ? fallback : s
 }
 
-/** Apply `sanitiseFilename` to every segment of a path, preserving structure. */
+/**
+ * Apply `sanitiseFilename` to every segment of a path, preserving structure.
+ *
+ * `..` segments pass through verbatim. Sanitising one would delete it (a lone
+ * `..` reduces to an empty segment), silently rewriting `../../etc/passwd` into
+ * the plausible-looking `etc/passwd` and making `hasTraversal` return false on
+ * the result. Sanitising is not a safety check: run `hasTraversal` or
+ * `assertCleanPath` to reject the path.
+ */
 export function sanitisePath(path: string, options: SanitiseOptions = {}): string {
   return normalisePath(path)
     .split("/")
-    .map((segment) => sanitiseFilename(segment, options))
+    .map((segment) => (segment === ".." ? segment : sanitiseFilename(segment, options)))
     .filter((segment) => segment !== "")
     .join("/")
 }
