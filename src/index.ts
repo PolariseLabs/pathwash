@@ -46,9 +46,11 @@ export {
 export { getExtension, splitExtension } from "./extension.js"
 export {
   basename,
+  caseCollisions,
   dirname,
   joinPath,
   resolveWithin,
+  segments,
   stem,
 } from "./segments.js"
 export {

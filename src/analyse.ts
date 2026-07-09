@@ -6,6 +6,7 @@ import type {
   RejectedEntry,
   SkippedEntry,
 } from "./types.js"
+import { caseCollisions } from "./segments.js"
 import { hasTraversal, isDirectoryMarker, normalisePath } from "./normalise.js"
 import { isJunkPath } from "./junk.js"
 import { sanitisePath } from "./sanitise.js"
@@ -95,17 +96,10 @@ export function analyseEntries(entries: EntryInput[], options: AnalyseOptions = 
     rejected.push({ path: f.from, reason: "collision", collidesWith: existing.from })
   }
 
-  const byLowercase = new Map<string, string[]>()
-  for (const f of planned) {
-    const key = f.to.toLowerCase()
-    const group = byLowercase.get(key)
-    if (group) group.push(f.to)
-    else byLowercase.set(key, [f.to])
-  }
-  const caseCollisions = [...byLowercase.values()].filter((g) => g.length > 1)
+  const collisions = caseCollisions(planned.map((f) => f.to))
   const warnings = collectWarnings(planned.map((f) => f.to))
 
-  return { entries: planned, skipped, rejected, commonRoot, caseCollisions, warnings }
+  return { entries: planned, skipped, rejected, commonRoot, caseCollisions: collisions, warnings }
 }
 
 /**

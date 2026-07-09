@@ -2,6 +2,40 @@ import { normalisePath } from "./normalise.js"
 import { splitExtension } from "./extension.js"
 
 /**
+ * The path's non-empty segments, normalised.
+ *
+ * Callers reach for `path.split("/")` and then filter empties, drop `.`, and
+ * handle `\` themselves — or forget to. Splitting is also how you answer
+ * "what folder is this under?" without the library needing to know what your
+ * folders mean: `segments("levels/intro/a.png")[1]` is `"intro"`.
+ *
+ * `..` is preserved, so a hostile path stays visible to `hasTraversal`.
+ */
+export function segments(path: string): string[] {
+  return normalisePath(path).split("/").filter(Boolean)
+}
+
+/**
+ * Groups of paths that differ only by letter case.
+ *
+ * S3 and Linux are case-sensitive; macOS and Windows are not. An archive
+ * carrying both `Logo.png` and `logo.png` extracts to one file locally and two
+ * objects in the bucket, so the local build passes and production serves the
+ * wrong bytes for one of them. Returns one group per collision, empty when
+ * there are none.
+ */
+export function caseCollisions(paths: readonly string[]): string[][] {
+  const byLowercase = new Map<string, string[]>()
+  for (const path of paths) {
+    const key = path.toLowerCase()
+    const group = byLowercase.get(key)
+    if (group) group.push(path)
+    else byLowercase.set(key, [path])
+  }
+  return [...byLowercase.values()].filter((group) => group.length > 1)
+}
+
+/**
  * Last segment of a path. `node:path` is not available in a browser or edge
  * bundle, so this gets re-implemented as `p.split("/").pop()` everywhere, and
  * every re-implementation rediscovers the same three surprises: a trailing
