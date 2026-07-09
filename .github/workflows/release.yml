@@ -18,11 +18,15 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+      # Node 24 bundles npm 11.16.0, past the 11.5.1 that trusted publishing
+      # (OIDC) needs. Do NOT `npm install -g npm@latest` on top of it: the
+      # reinstall leaves libnpmpublish's provenance.js requiring `sigstore`,
+      # which is absent from the rewritten tree, and provenance is precisely
+      # what trusted publishing calls. Publishing then dies with
+      # `MODULE_NOT_FOUND Cannot find module 'sigstore'`.
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      # npm trusted publishing (OIDC) needs npm 11.5.1+
-      - run: npm install -g npm@latest
       - run: bun install
       - uses: changesets/action@v1
         with:
